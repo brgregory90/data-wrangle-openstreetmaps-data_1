@@ -1,0 +1,36 @@
+Imported json file into MongoDB using mongoimport:
+>mongoimport -d examples -c nashville --file nashville_mongo.json
+	File size 262.5 MB	
+
+Descriptive stats
+
+print "The number of files is %d" % db.nashville.find().count()
+	
+print "The number of nodes is %d" % db.nashville.find({“type": “node"}).count()
+	
+print "The number of ways is %d" % db.nashville.find({"type": “way"}).count()
+	
+print “The number of unique users is %d” % len(db.nashville.distinct(“created.user”))
+	
+restaurants = db.nashville.find({'amenity':'restaurant', ‘type':'node'}).count()
+
+print restaurants  
+
+
+
+Search for a count of places of worship.
+db.nashville.find({'amenity':'place_of_worship','type':'node', 'name' : {‘$exists':1}}).count()
+
+
+Search for most prevalent religion among places of worship
+db.nashville.aggregate([{"$match":{"name":{"$exists":1}, “amenity”:"place_of_worship"}},{"$group":{"_id":"$religion","count": {"$sum":1}}}, {“$sort":{"count":-1}},{"$limit":1}]) 	
+
+Search for count of Jewish places of worship
+db.nashville.find({‘amenity':'place_of_worship', ‘religion’: ‘jewish’, ’type’:’node’, 'name' : {‘$exists':1}}).count()
+
+
+Print out attributes of all Jewish places of worship
+pprint.pprint(db.nashville.find_one({'amenity':'place_of_worship','religion': 'jewish','type':'node', 'name' : {'$exists':1}}))
+
+Search for counties and order by prevalence of existing 'in_in' nodes
+db.nashville.aggregate([{“$match":{"is_in":{"$exists":1}, “type”:”node"}},{"$group":{"_id":"$is_in","count": {"$sum":1}}}, {“$sort”:{"count":-1}}]) 
